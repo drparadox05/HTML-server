@@ -36,7 +36,7 @@ fn main() {
                     if (header_line == "\r\n" || bytes_read == 0){
                         break;
                     }
-                    if let Some(user_agent_stripped) = header_line.strip_prefix("user-agent: "){
+                    if let Some(user_agent_stripped) = header_line.strip_prefix("User-Agent: "){
                         user_agent = user_agent_stripped.trim_end().to_string();
                     }
                 }
