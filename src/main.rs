@@ -23,7 +23,6 @@ fn main() {
                     "HTTP/1.1 404 Not Found\r\n\r\n"
                 };
 
-                let response = "HTTP/1.1 200 OK\r\n\r\n";
                 if let Err(e) = stream.write_all(response.as_bytes()) {
                     println!("Failed to write to stream: {}", e);
                 }
