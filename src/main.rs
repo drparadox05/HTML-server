@@ -32,7 +32,7 @@ fn main() {
                 else if path.starts_with("/echo") {
                     let content = &path[6..];
                     let content_len = content.len();
-                    format!("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n {}", content_len, content)
+                    format!("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}", content_len, content)
                 }
                 else {
                     "HTTP/1.1 404 Not Found\r\n\r\n".to_string()
