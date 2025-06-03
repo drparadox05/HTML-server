@@ -2,7 +2,7 @@
 use std::net::TcpListener;
 use std::io::{BufRead, BufReader, Write};
 use std::thread;
-
+use std::fs;
 
 /*
 - Header names are case-insensitive.
@@ -54,6 +54,11 @@ fn main() {
                     }
                     else if *path == "/user-agent" {
                         format!("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}", user_agent.len(), user_agent)
+                    }
+                    else if path.starts_with("/file/") {
+                        let file_path = &path[7..];
+                        let file_content = fs::read_to_string(file_path).expect("Should have been able to read the file");
+                        format!("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}", file_content.len(), file_content)
                     }
                     else {
                         "HTTP/1.1 404 Not Found\r\n\r\n".to_string()
