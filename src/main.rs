@@ -68,7 +68,7 @@ fn main() {
                     else if *path == "/user-agent" {
                         format!("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}", user_agent.len(), user_agent)
                     }
-                    else if path.starts_with("/file/") {
+                    else if path.starts_with("/files/") {
                         let file_name = &path[7..];
                         let mut file_path = PathBuf::from(&directory);
                         file_path.push(file_name);
