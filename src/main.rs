@@ -52,7 +52,7 @@ fn main() {
                     let parts : Vec<&str> = request_line.trim_end().split_whitespace().collect();
                     let path = parts.get(1).unwrap_or(&"");
                     let method = parts.get(0).unwrap_or(&"");
-                    let content_length = 0; 
+                    let mut content_length = 0; 
 
                     loop {
                         header_line.clear();
