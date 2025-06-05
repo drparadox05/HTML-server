@@ -74,7 +74,7 @@ fn main() {
                         file_path.push(file_name);
                         match fs::read_to_string(file_path) {
                             Ok(file_bytes) => 
-                                format!("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}", file_bytes.len(), file_bytes),
+                                format!("HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: {}\r\n\r\n{}", file_bytes.len(), file_bytes),
                             Err(_) => "HTTP/1.1 404 Not Found\r\n\r\n".to_string(),
                         }
                     }
