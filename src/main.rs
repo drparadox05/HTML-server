@@ -3,6 +3,8 @@ use std::net::TcpListener;
 use std::io::{BufRead, BufReader, Write};
 use std::thread;
 use std::fs;
+use std::env;
+use std::path::PathBuf;
 
 /*
 - Header names are case-insensitive.
@@ -12,6 +14,15 @@ Note that each header ends in a CRLF, and the entire header section also ends in
 
 
 fn main() {
+
+    let args : Vec<String> = env::args().collect();
+    let mut directory = String::new();
+    for i in 0..args.len() {
+        if args[i] == "--directory" && i + 1 < args.len() {
+            directory = args[i+1].clone();
+        }
+    }
+
     let listener = TcpListener::bind("127.0.0.1:4221").unwrap();
     for stream in listener.incoming() {
         match stream {
@@ -47,7 +58,7 @@ fn main() {
                     if *path == "/" {
                         "HTTP/1.1 200 OK\r\n\r\n".to_string()
                     }
-                    else if path.starts_with("/echo") {
+                    else if path.starts_with("/echo/") {
                         let content = &path[6..];
                         let content_len = content.len();
                         format!("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}", content_len, content)
@@ -56,9 +67,14 @@ fn main() {
                         format!("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}", user_agent.len(), user_agent)
                     }
                     else if path.starts_with("/file/") {
-                        let file_path = &path[7..];
-                        let file_content = fs::read_to_string(file_path).expect("Should have been able to read the file");
-                        format!("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}", file_content.len(), file_content)
+                        let file_name = &path[7..];
+                        let mut file_path = PathBuf::from(&directory);
+                        file_path.push(file_name);
+                        match fs::read_to_string(file_path) {
+                            Ok(file_bytes) => 
+                                format!("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}", file_bytes.len(), file_bytes)
+                            Err(_) => "HTTP/1.1 404 Not Found\r\n\r\n".to_string(),
+                        }
                     }
                     else {
                         "HTTP/1.1 404 Not Found\r\n\r\n".to_string()
