@@ -79,22 +79,24 @@ fn main() {
                                 if let Some(conn_header_stripped) = header_line.strip_prefix("Connection: "){
                                     connection_header = conn_header_stripped.trim_end().to_lowercase();
                                 }
-                                if connection_header == "close" {
-                                    break;
-                                }
+                            }
+
+                            let mut extra_header = String::new();
+                            if connection_header == "close" {
+                                extra_header = "Connection: close\r\n".to_string();
                             }
 
                             response = 
                             if *path == "/" {
-                                "HTTP/1.1 200 OK\r\n\r\n".to_string()
+                                format!("HTTP/1.1 200 OK\r\n{}Content-Length: 0\r\n\r\n", extra_header)
                             }
                             else if path.starts_with("/echo/") {
                                 let content = &path[6..];
                                 let content_len = content.len();
-                                format!("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}", content_len, content)
+                                format!("HTTP/1.1 200 OK\r\n{}Content-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}", extra_header, content_len, content)
                             }
                             else if *path == "/user-agent" {
-                                format!("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}", user_agent.len(), user_agent)
+                                format!("HTTP/1.1 200 OK\r\n{}Content-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}", extra_header, user_agent.len(), user_agent)
                             }
                             else if path.starts_with("/files/") {
                                 if *method == "POST" {
@@ -104,7 +106,7 @@ fn main() {
                                     let mut file_path = PathBuf::from(&directory);
                                     file_path.push(file_name);
                                     fs::write(file_path, body).unwrap();
-                                    "HTTP/1.1 201 Created\r\n\r\n".to_string()
+                                    format!("HTTP/1.1 201 Created\r\n{}\r\n", extra_header)
                                 }
                                 else {
                                     let file_name = &path[7..];
@@ -112,13 +114,13 @@ fn main() {
                                     file_path.push(file_name);
                                     match fs::read_to_string(file_path) {
                                         Ok(file_bytes) => 
-                                            format!("HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: {}\r\n\r\n{}", file_bytes.len(), file_bytes),
-                                        Err(_) => "HTTP/1.1 404 Not Found\r\n\r\n".to_string(),
+                                            format!("HTTP/1.1 200 OK\r\n{}Content-Type: application/octet-stream\r\nContent-Length: {}\r\n\r\n{}", extra_header, file_bytes.len(), file_bytes),
+                                        Err(_) => format!("HTTP/1.1 404 Not Found\r\n{}\r\n", extra_header)
                                     }
                                 }
                             }
                             else {
-                                "HTTP/1.1 404 Not Found\r\n\r\n".to_string()
+                                format!("HTTP/1.1 404 Not Found\r\n{}\r\n", extra_header)
                             };
                         }
 
