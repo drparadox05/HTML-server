@@ -79,6 +79,9 @@ fn main() {
                                 if let Some(conn_header_stripped) = header_line.strip_prefix("Connection: "){
                                     connection_header = conn_header_stripped.trim_end().to_lowercase();
                                 }
+                                if connection_header == "close" {
+                                    break;
+                                }
                             }
 
                             response = 
