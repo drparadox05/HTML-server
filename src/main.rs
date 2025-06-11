@@ -85,11 +85,12 @@ fn main() {
                                 }
                             }
 
+                            let is_gzip_present = content_encoding.split(',').map(|s| s.trim()).any(|s| s == "gzip");
                             let mut headers = String::new();
                             if connection_header == "close" {
                                 headers.push_str("Connection: close\r\n");
                             }
-                            if content_encoding == "gzip" {
+                            if is_gzip_present {
                                 headers.push_str("Content-Encoding: gzip\r\n");
                             }
 
