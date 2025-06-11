@@ -80,35 +80,31 @@ fn main() {
                                 if let Some(conn_header_stripped) = header_line.strip_prefix("Connection: "){
                                     connection_header = conn_header_stripped.trim_end().to_lowercase();
                                 }
-                                if let Some(content_encoding_stripped) = header_line.strip_prefix("Content-Encoding: "){
+                                if let Some(content_encoding_stripped) = header_line.strip_prefix("Accept-Encoding: "){
                                     content_encoding = content_encoding_stripped.trim_end().to_lowercase();
                                 }
                             }
 
-                            let mut extra_header = String::new();
+                            let mut headers = String::new();
                             if connection_header == "close" {
-                                extra_header = "Connection: close\r\n".to_string();
+                                headers.push_str("Connection: close\r\n");
                             }
 
-                            let mut encoding_header = String::new();
                             if content_encoding != "gzip" {
-                                encoding_header = "Content-Encoding: gzip".to_string();
-                            }
-                            else {
-                                encoding_header = "Accept-Encoding: invalid-encoding".to_string();
+                                headers.push_str("Content-Encoding: gzip\r\n");
                             }
 
                             response = 
                             if *path == "/" {
-                                format!("HTTP/1.1 200 OK\r\n{}\r\n{}Content-Length: 0\r\n\r\n", extra_header, encoding_header)
+                                format!("HTTP/1.1 200 OK\r\n{}Content-Length: 0\r\n\r\n", headers)
                             }
                             else if path.starts_with("/echo/") {
                                 let content = &path[6..];
                                 let content_len = content.len();
-                                format!("HTTP/1.1 200 OK\r\n{}Content-Type: text/plain\r\nContent-Length: {}\r\n{}\r\n\r\n{}", extra_header, content_len, encoding_header, content)
+                                format!("HTTP/1.1 200 OK\r\n{}Content-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}", headers, content_len, content)
                             }
                             else if *path == "/user-agent" {
-                                format!("HTTP/1.1 200 OK\r\n{}Content-Type: text/plain\r\nContent-Length: {}\r\n{}\r\n{}", extra_header, user_agent.len(), encoding_header, user_agent)
+                                format!("HTTP/1.1 200 OK\r\n{}Content-Type: text/plain\r\nContent-Length: {}\r\n{}", headers, user_agent.len(), user_agent)
                             }
                             else if path.starts_with("/files/") {
                                 if *method == "POST" {
@@ -118,7 +114,7 @@ fn main() {
                                     let mut file_path = PathBuf::from(&directory);
                                     file_path.push(file_name);
                                     fs::write(file_path, body).unwrap();
-                                    format!("HTTP/1.1 201 Created\r\n{}\r\n{}\r\n", extra_header, encoding_header)
+                                    format!("HTTP/1.1 201 Created\r\n{}\r\n", headers)
                                 }
                                 else {
                                     let file_name = &path[7..];
@@ -126,13 +122,13 @@ fn main() {
                                     file_path.push(file_name);
                                     match fs::read_to_string(file_path) {
                                         Ok(file_bytes) => 
-                                            format!("HTTP/1.1 200 OK\r\n{}Content-Type: application/octet-stream\r\nContent-Length: {}\r\n{}\r\n\r\n{}", extra_header, file_bytes.len(), encoding_header, file_bytes),
-                                        Err(_) => format!("HTTP/1.1 404 Not Found\r\n{}\r\n{}\r\n", extra_header, encoding_header)
+                                            format!("HTTP/1.1 200 OK\r\n{}Content-Type: application/octet-stream\r\nContent-Length: {}\r\n\r\n{}", headers, file_bytes.len(), file_bytes),
+                                        Err(_) => format!("HTTP/1.1 404 Not Found\r\n{}\r\n", headers)
                                     }
                                 }
                             }
                             else {
-                                format!("HTTP/1.1 404 Not Found\r\n{}\r\n{}\r\n", extra_header, encoding_header)
+                                format!("HTTP/1.1 404 Not Found\r\n{}\r\n", headers)
                             };
                         }
 
