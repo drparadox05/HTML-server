@@ -103,7 +103,7 @@ fn main() {
                                 format!("HTTP/1.1 200 OK\r\n{}Content-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}", headers, content_len, content)
                             }
                             else if *path == "/user-agent" {
-                                format!("HTTP/1.1 200 OK\r\n{}Content-Type: text/plain\r\nContent-Length: {}\r\n{}", headers, user_agent.len(), user_agent)
+                                format!("HTTP/1.1 200 OK\r\n{}Content-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}", headers, user_agent.len(), user_agent)
                             }
                             else if path.starts_with("/files/") {
                                 if *method == "POST" {
