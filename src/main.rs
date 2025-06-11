@@ -5,6 +5,8 @@ use std::thread;
 use std::fs;
 use std::env;
 use std::path::PathBuf;
+use flate2::write::GzEncoder;
+use flate2::Compression;
 
 
 /*
@@ -100,8 +102,22 @@ fn main() {
                             }
                             else if path.starts_with("/echo/") {
                                 let content = &path[6..];
-                                let content_len = content.len();
-                                format!("HTTP/1.1 200 OK\r\n{}Content-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}", headers, content_len, content)
+                                let (body, content_len);
+                                if is_gzip_present {
+                                    let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
+                                    encoder.write_all(content.as_bytes()).unwrap();
+                                    let compressed_bytes = encoder.finish().unwrap();
+                                    content_len = compressed_bytes.len();
+                                    body = compressed_bytes;
+                                }
+                                else {
+                                    content_len = content.len();
+                                    body = content.as_bytes().to_vec();
+                                }
+                                let mut response = format!("HTTP/1.1 200 OK\r\n{}Content-Type: text/plain\r\nContent-Length: {}\r\n\r\n", headers, content_len).into_bytes();
+                                response.extend_from_slice(&body);
+                                stream.write_all(&response).unwrap();
+                                continue;
                             }
                             else if *path == "/user-agent" {
                                 format!("HTTP/1.1 200 OK\r\n{}Content-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}", headers, user_agent.len(), user_agent)
