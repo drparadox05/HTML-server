@@ -89,8 +89,7 @@ fn main() {
                             if connection_header == "close" {
                                 headers.push_str("Connection: close\r\n");
                             }
-
-                            if content_encoding != "gzip" {
+                            if content_encoding == "gzip" {
                                 headers.push_str("Content-Encoding: gzip\r\n");
                             }
 
